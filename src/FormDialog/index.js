@@ -14,10 +14,16 @@ export default (
     return {
       props: {
         adding: Boolean,
+        loading: Boolean
       },
       data() {
         return {
-          loading: false
+          innerLoading: false
+        }
+      },
+      watch: {
+        loading(val) {
+          this.innerLoading = val
         }
       },
       methods: {
@@ -27,6 +33,17 @@ export default (
         },
         closeDialog() {
           this.$emit('update:visible', false)
+        },
+        updateLoading(loading) {
+          this.$emit('update:loading', loading)
+        },
+        showLoading() {
+          this.innerLoading = true
+          this.updateLoading(true)
+        },
+        hideLoading() {
+          this.innerLoading = false
+          this.updateLoading(false)
         }
       },
 
@@ -43,7 +60,7 @@ export default (
             { ...{on: {...this.$listeners, confirm: this.confirm}} }
             adding={ this.adding }
             title={ title }
-            loading={ this.loading }/>
+            loading={ this.innerLoading }/>
         )
       },
       components: {

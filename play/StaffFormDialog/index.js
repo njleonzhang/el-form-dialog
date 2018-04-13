@@ -1,16 +1,55 @@
+/*
+  fake usage with vuex
+*/
+
 import StaffForm from './StaffForm'
 import { FormDialog } from '@/index'
 import { sleep } from '../tool'
 
-export default FormDialog({
-  async confirm(data) {
-    this.loading = true
-    // simulate a http request
-    await sleep(1000)
-    this.loading = false
-    this.$message(`name: ${data.name}, age: ${data.age}`)
-    // update data here with vuex
-    this.closeDialog()
+/*
+sample code
+
+import { createNamespacedHelpers } from 'vuex'
+const { mapActions } = createNamespacedHelpers('staffs')
+*/
+
+export default FormDialog(
+  {
+    async confirm(data) {
+      this.showLoading()
+      // simulate a http request
+      await sleep(1000)
+      /*
+      sample code
+
+      try {
+        if (this.adding) {
+          await this.add()
+        } else {
+          await this.edit()
+        }
+      } catch (e) {
+        console.log(e)
+      }
+      */
+      this.hideLoading()
+      this.$message(`name: ${data.name}, age: ${data.age}`)
+      console.log(data)
+
+      this.closeDialog()
+    },
+    titleSuffix: 'staff'
   },
-  titleSuffix: 'staff'
-})(StaffForm)
+  {
+    methods: {
+      /*
+      sample code
+
+      ...mapActions([
+        'add',
+        'update'
+      ])
+      */
+    }
+  }
+)(StaffForm)
