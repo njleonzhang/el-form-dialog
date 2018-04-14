@@ -3,6 +3,7 @@
 > A Hoc to make el-dialog and el-form work eaiser
 
 [Demo](https://njleonzhang.github.io/el-form-dialog/)
+
 [Demo code](https://github.com/njleonzhang/el-form-dialog/tree/master/play)
 
 ## Why?
