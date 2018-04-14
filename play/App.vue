@@ -35,14 +35,22 @@ export default {
     return {
       dialogOpen: false,
       adding: false,
-      data: {
-        name: 'Leon',
-        age: '10'
-      },
+      data: {},
+      datas: [
+        {
+          name: 'Leon',
+          age: '10'
+        },
+        {
+          name: 'candy',
+          age: '9'
+        }
+      ],
       animalDialogOpen: false,
       animalData: {
         type: '猫科',
-        name: '老虎'
+        name: '老虎',
+        time: new Date('1987')
       },
       loading: false
     }
@@ -53,6 +61,7 @@ export default {
       this.dialogOpen = true
     },
     editStaff() {
+      this.data = this.datas[Math.random() < 0.5 ? 0 : 1]
       this.adding = false
       this.dialogOpen = true
     },
@@ -67,13 +76,14 @@ export default {
     async confirmAnimal(data) {
       this.loading = true
       await sleep(1000)
-      this.loading = false
-      this.animalDialogOpen = false
+      // your business logic here
       if (this.adding) {
 
       } else {
         this.animalData = data
       }
+      this.loading = false
+      this.animalDialogOpen = false
     }
   }
 }

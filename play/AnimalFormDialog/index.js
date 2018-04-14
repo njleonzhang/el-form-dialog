@@ -1,6 +1,7 @@
 import AnimalForm from './AnimalForm'
-import { FormDialog } from '@/index'
+import { createFormDialog } from '@/index'
 
-export default FormDialog({
-  titleSuffix: '动物'
+export default createFormDialog({
+  addTitle: 'add animal',
+  editTitle: 'edit animal'
 })(AnimalForm)

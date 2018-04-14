@@ -1,27 +1,338 @@
 # el-dialog-hoc
 
-> A Vue.js project
+> A Hoc to make el-dialog and el-form work eaiser
 
-## Build Setup
+## Why?
 
-``` bash
-# install dependencies
-npm install
+## confirm和cancel按钮
+[element-ui](http://element.eleme.io/)的[dialog](http://element.eleme.io/#/zh-CN/component/dialog)
+本身是不带按钮的, 需要通过slot去添加。这个设计本身没有问题，组件分离的很开。但是实际使用了缺带来了不便，主要是这里的2个按钮一般一个项目都是一样的，但是却要不断的写这段`slot = footer`代码，感觉很是烦躁。
+```
+<el-dialog
+  title="提示"
+  :visible.sync="dialogVisible"
+  width="30%"
+  :before-close="handleClose">
+  <span>这是一段信息</span>
+  <span slot="footer" class="dialog-footer">
+    <el-button @click="dialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+  </span>
+</el-dialog>
+```
+## validate操作
+就是和[el-form](http://element.eleme.io/#/zh-CN/component/form)一起用的时候，每次点击确定键的时候都要去对表带做validate, 每次点取消都要对validate的提示做清除, 这些代码也是要不断重复的。
 
-# serve with hot reload at localhost:8080
-npm run dev
+## 添加和修改的dialog
+添加和修改的dialog一般来说是比较相似的，如果分别写一个dialog来处理，逻辑上自然是简单的，但是缺凭空多出很多重复代码来，运行时也多1倍的组件实例。但是如果把添加和修改dialog做成一个往往又需要处理组件的重用的逻辑复杂性，而这些处理大体上是十分相似的。
 
-# build for production with minification
-npm run build
+这个库对`el-dialog`和`el-form`做了一些封装处理以上问题，让大家可以轻松上阵，专注自己的业务逻辑。
 
-# build for production and view the bundle analyzer report
-npm run build --report
+## 使用
 
-# run unit tests
-npm run unit
+```
+yarn add element-ui
+npm install --save-dev element-ui
 
-# run all tests
-npm test
+import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css'
+Vue.use(ElementUI)
+
+yarn add el-dialog-hoc
+cnpm install --save-dev el-dialog-hoc
+
+import { createFormDialog, craeteCommonDialog } from 'el-dialog-hoc'
 ```
 
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+对于一个添加和修改的dialog，我们实际上只关心需要关心一下几点：
+
+* dialog里form (form的展示、数据、如果validate等)
+* dialog在添加时和修改时的title
+* dialog上确定和取消按钮的labal
+* 点击完成后，得到新的数据，并通知我们处理。 (取消的时候暂时只是关闭dialog)
+
+### 创建form
+所以第一步我们需要创建一个form:
+
+```
+<template>
+  <el-form :model='data' :rules='rules' ref='form'>  // model属性一定要是 data, el-form 一定要有ref并且设置为for
+    <el-form-item label="科目" prop="type">
+      <el-input v-model="data.type"></el-input>
+    </el-form-item>
+    <el-form-item label="类名" prop="name">
+      <el-input v-model="data.name"></el-input>
+    </el-form-item>
+    <div v-if="!this.adding">  // 如果是编辑dialog的话多显现一些内容
+      南京动物园
+    </div>
+  </el-form>
+</template>
+
+<script>
+export default {
+  props: {
+    adding: Boolean       // optional
+  },
+  data() {
+    return {
+      defaultData: {      // must
+        type: '',
+        name: ''
+      },
+      data: {},           // must
+      rules: {            // 定义el-form的validate规则，点击dialog确认按钮的时候，会自动调用
+        type: [
+          { required: true, message: '名称不能为空！', trigger: 'blur' },
+          { max: 5, message: '岗位名称过长，请修改！', trigger: 'blur' },
+        ]
+      }
+    }
+  },
+  methods: {
+    getData() {           // optional
+      return {
+        ...this.data,
+        zoo: '南京'
+      }
+    }
+  }
+}
+</script>
+```
+
+这个form与一般的element-ui的[el-form](http://element.eleme.io/#/zh-CN/component/form)相比，没什么太多的不同，只是这几个字段要特别注意一下。
+
+| 属性 | vue property 类型 | 必要么 | 作用 |
+| --- | -- | -- | -- |
+| adding | props | 非必须 | 如果为form加了这个属性，这可以根据这个属性去处理添加dialog和编辑dialog的不同 |
+| defaultData | data/computed | 必须 | 打开添加Dialog时表格里的默认值，如果值是固定的用data声明定义即可。如果defaultData不固定需要动态生成，则可以使用computed来计算 |
+| data | data | 必须 | 组件库内部使用，设置成`{}`就行, 对应于el-form 的 model字段 |
+| getData | methods | 非必须 | 用于在点击confirm时，处理返回的数据 |
+
+另外，`el-form`一定要有一个ref属性，并且值设置为`form`
+
+### 创建Dialog
+```
+import { createFormDialog } from 'el-dialog-hoc'
+```
+提供了一个方法来创建Dialog
+
+```
+createFormDialog(config: Config, mixin: VueMixin) : (form: VueConstructor) => VueConstructor
+
+inteface Config {
+  confirm? = (data) => void,  // 配合vuex使用时，用于定义回调confirm点击后的回调
+  addTitle? = '添加',          // 添加dialog时的title
+  editTitle? = '编辑',         // 编辑dialog时的title
+  confirmText? = '确定',       // 确认按钮的label
+  cancelText? = '取消'         // 取消按钮的label
+}
+```
+
+`createFormDialog`的第一个参数是Config类型的，提供系列的配置项。
+> 配置项里`confirm`函数，可以用作处理Dialog确认的回调，在这个函数里this被绑定为生成的Dialog对象，所以在这个函数里可以调用Dialog对象上的方法。
+
+第二个参数是一个Vue的mixin, 用于深度定制化生成的Dialog组件, 一般配合vuex来使用。
+`createFormDialog`返回一个函数，这个函数接受一个我们上一步创建的包含
+`el-form`的Vue组件作为参数，返回的则是我们需要的Dialog组件。得到的这个dialog的具体参数如下：
+
+* props
+
+| 属性 | 作用 |
+| --- | -- |
+| adding | true的时候Dialog为添加Dailog, false时为编辑Dialog，默认为true |
+| loading | 具有.sync后缀。true的时候确认按钮处于loading状态。 |
+| visible | 具有.sync后缀。true的时候显示Dialog |
+| data | 传入数据，供编辑Dialog展示 |
+
+Dialog可能会被用于配合vuex使用或者不和vuex一起使用。这两种场景下Dialog在创建和使用的时候会有所不同
+
+* event
+
+| 属性 | payload | 描述 |
+| --- | -- | -- |
+| confirm | el-form里的数据 | 点击Dialog确认时发出 |
+
+* 对象方法
+
+| 属性 | 描述 |
+| --- | -- |
+| closeDialog | 关闭Dialog |
+| showLoading | 将confirm button置为loading状态 |
+| showLoading | 将confirm button置为非loading状态 |
+
+### 配合vuex使用Dialog
+
+配合vuex使用的时候，建议在`createFormDialog`第一个参数的confirm函数里处理来confirm点击的业务逻辑。并通过`this`来调用实例上的`closeDialog`，`showLoading`和`showLoading`来控制UI的呈现。
+
+```
+// StaffFormDialog.js
+import StaffForm from './StaffForm'
+
+import { createNamespacedHelpers } from 'vuex'
+const { mapActions } = createNamespacedHelpers('staffs')
+
+export default createFormDialog(
+  {
+    addTitle: 'add staff',
+    editTitle: 'edit staff',
+    async confirm(data) {
+      // 主要的业务逻辑
+      this.showLoading()
+      try {
+        if (this.adding) {
+          await this.add()
+        } else {
+          await this.edit()
+        }
+      } catch (e) {
+        console.log(e)
+      }
+
+      this.hideLoading()
+      this.closeDialog()
+    }
+  },
+  {
+    methods: {
+      ...mapActions([
+        'add',
+        'update'
+      ])
+    }
+  }
+)(StaffForm)
+```
+
+```
+// 业务逻辑在vux层完成了，使用Dialog的时候，只需要处理Dialog的打开即可，并为编辑模式提供初始值。
+<teamplte>
+  <div>
+    <staff-form-dialog
+      :adding='adding'
+      :visible.sync='visible'
+      :data='data'>
+    </staff-form-dialog>
+    <el-button @click="addStaff">add staff</el-button>
+    <el-button @click="editStaff">edit staff</el-button>
+  </div>
+</teamplte>
+<script>
+  import StaffFormDialog from './StaffFormDialog'
+  export default {
+    name: 'App',
+    components: {
+      StaffFormDialog,
+    },
+    data() {
+      return {
+        visible: false,
+        adding: false,
+        datas: [
+          {
+            name: 'Leon',
+            age: '10'
+          },
+          {
+            name: 'candy',
+            age: '9'
+          }
+        ]
+        data: {}
+      }
+    },
+    methods: {
+      addStaff() {
+        this.adding = true
+        this.visible = true
+      },
+      editStaff() {
+        this.data = this.datas[Math.random() < 0.5 ? 0 : 1]
+        this.adding = false
+        this.visible = true
+      }
+    }
+  }
+</script>
+```
+
+### 不和vuex组使用
+对于小的项目，也许并不使用vuex，此时业务逻辑就需要在使用Dialog的时候处理了。
+
+```
+// AnimalFormDialog.vue
+
+// Dailog的创建变得简单，因为不需要处理业务逻辑了。
+import AnimalForm from './AnimalForm'
+import { createFormDialog } from '@/index'
+
+export default createFormDialog({
+  addTitle: 'add animal',
+  editTitle: 'edit animal'
+})(AnimalForm)
+```
+
+```
+// Dialog的代码变得复杂, 需要多传递一个loading的props, 来控制loading状态。
+// 业务逻辑和dialog开关的逻辑，则通过监听confirm事件来处理。
+
+<template>
+  <div>
+    <el-button @click="addAnimal">add animal</el-button>
+    <el-button @click="editAnimal">edit animal</el-button>
+
+    <animal-form-dialog
+      :adding='adding'
+      :visible.sync='animalDialogOpen'
+      :loading.sync='loading'   // 与vuex配合使用的时候不需要此props.
+      :data='animalData'
+      @confirm='confirmAnimal'> // 与vuex配合使用的时候也不需要监听此事件.
+    </animal-form-dialog>
+  </div>
+</template>
+
+<script>
+import AnimalFormDialog from './AnimalFormDialog'
+
+export default {
+  name: 'App',
+  components: {
+    StaffFormDialog,
+    AnimalFormDialog
+  },
+  data() {
+    return {
+      animalDialogOpen: false,
+      animalData: {
+        type: '猫科',
+        name: '老虎'
+      },
+      loading: false
+    }
+  },
+  methods: {
+    addAnimal() {
+      this.adding = true
+      this.animalDialogOpen = true
+    },
+    editAnimal() {
+      this.adding = false
+      this.animalDialogOpen = true
+    },
+    async confirmAnimal(data) {
+      this.loading = true
+      await sleep(1000)
+      // your business logic here
+      if (this.adding) {
+
+      } else {
+        this.animalData = data
+      }
+      this.loading = false
+      this.animalDialogOpen = false
+    }
+  }
+}
+</script>
+```

@@ -6,17 +6,22 @@
     <el-form-item label="类名" prop="name">
       <el-input v-model="data.name"></el-input>
     </el-form-item>
+    <el-form-item label="事件" prop="name">
+      <el-input v-model="data.time"></el-input>
+    </el-form-item>
+    <div v-if="!this.adding">
+      南京动物园
+    </div>
   </el-form>
 </template>
 
 <script>
 export default {
+  props: {
+    adding: Boolean
+  },
   data() {
     return {
-      defaultData: {
-        type: '',
-        name: ''
-      },
       data: {},
       rules: {
         type: [
@@ -25,6 +30,15 @@ export default {
         ]
       }
     }
+  },
+  computed: {
+    defaultData() {
+      return {
+        type: '',
+        name: '',
+        time: new Date()
+      }
+    },
   },
   methods: {
     getData() {

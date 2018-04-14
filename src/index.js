@@ -1,2 +1,2 @@
-export { default as CommonDialogHOC } from './CommonDialogHoc'
-export { default as FormDialog } from './FormDialog'
+export { default as createCommonDialog } from './CommonDialogHoc'
+export { default as createFormDialog } from './FormDialog'

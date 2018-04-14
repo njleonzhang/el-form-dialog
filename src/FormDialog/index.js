@@ -4,16 +4,22 @@ import FormInDialogHOC from './FormInDialogHOC'
 export default (
   {
     confirm = null,
-    titleSuffix = ''
+    addTitle = '添加',
+    editTitle = '编辑',
+    confirmText = '确定',
+    cancelText = '取消'
   } = {},
   mixin = {}
 ) => {
   return (Component) => {
-    let HOC = CommonDialogHOC(FormInDialogHOC(Component))
+    let HOC = CommonDialogHOC(confirmText, cancelText)(FormInDialogHOC(Component))
 
     return {
       props: {
-        adding: Boolean,
+        adding: {
+          default: true,
+          type: Boolean
+        },
         loading: Boolean
       },
       data() {
@@ -53,7 +59,7 @@ export default (
 
       render() {
         let { title, ...attrs } = this.$attrs
-        title = this.adding ? `添加${titleSuffix}` : `编辑${titleSuffix}`
+        title = this.adding ? addTitle : editTitle
 
         return (
           <HOC { ...{attrs: attrs} }

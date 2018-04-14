@@ -3,7 +3,7 @@
 */
 
 import StaffForm from './StaffForm'
-import { FormDialog } from '@/index'
+import { createFormDialog } from '@/index'
 import { sleep } from '../tool'
 
 /*
@@ -13,8 +13,10 @@ import { createNamespacedHelpers } from 'vuex'
 const { mapActions } = createNamespacedHelpers('staffs')
 */
 
-export default FormDialog(
+export default createFormDialog(
   {
+    addTitle: 'add staff',
+    editTitle: 'edit staff',
     async confirm(data) {
       this.showLoading()
       // simulate a http request
@@ -37,8 +39,7 @@ export default FormDialog(
       console.log(data)
 
       this.closeDialog()
-    },
-    titleSuffix: 'staff'
+    }
   },
   {
     methods: {
