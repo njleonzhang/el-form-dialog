@@ -4,7 +4,7 @@
 
 ## Why?
 
-1. confirm和cancel按钮
+1. confirm和cancel按钮<br/>
 [element-ui](http://element.eleme.io/)的[dialog](http://element.eleme.io/#/zh-CN/component/dialog)
 本身是不带按钮的, 需要通过slot去添加。这个设计本身没有问题，组件分离的很开。但是实际使用了缺带来了不便，主要是这里的2个按钮一般一个项目都是一样的，但是却要不断的写这段`slot = footer`代码，感觉很是烦躁。
     ```
@@ -20,9 +20,9 @@
       </span>
     </el-dialog>
     ```
-2. validate操作
+2. validate操作<br/>
 就是和[el-form](http://element.eleme.io/#/zh-CN/component/form)一起用的时候，每次点击确定键的时候都要去对表带做validate, 每次点取消都要对validate的提示做清除, 这些代码也是要不断重复的。
-3. 添加和修改的dialog
+3. 添加和修改的dialog<br/>
 添加和修改的dialog一般来说是比较相似的，如果分别写一个dialog来处理，逻辑上自然是简单的，但是缺凭空多出很多重复代码来，运行时也多1倍的组件实例。但是如果把添加和修改dialog做成一个往往又需要处理组件的重用的逻辑复杂性，而这些处理大体上是十分相似的。
 
 这个库对`el-dialog`和`el-form`做了一些封装处理以上问题，让大家可以轻松上阵，专注自己的业务逻辑。
@@ -45,24 +45,27 @@ import { createFormDialog, craeteCommonDialog } from 'el-dialog-hoc'
 
 对于一个添加和修改的dialog，我们实际上只关心需要关心一下几点：
 
-1. dialog里form (form的展示、数据、如果validate等)
+1. dialog里form (form的展示、数据、validate等)
 2. dialog在添加时和修改时的title
-3. dialog上确定和取消按钮的labal
-4. 点击完成后，得到新的数据，并通知我们处理。 (取消的时候暂时只是关闭dialog)
+3. dialog上确定和取消按钮的label
+4. 点击完成后，得到新的数据，并通知我们处理。 (取消暂时只是关闭dialog，无法自定义)
 
 ### 步骤1: 创建form
-所以第一步我们需要创建一个form:
+第一步我们需要创建一个form:
 
 ```
 <template>
-  <el-form :model='data' :rules='rules' ref='form'>  // model属性一定要是 data, el-form 一定要有ref并且设置为for
+  <el-form :model='data' :rules='rules' ref='form'>   // model属性一定要是 data, el-form 一定要有ref并且设置为for
     <el-form-item label="科目" prop="type">
       <el-input v-model="data.type"></el-input>
     </el-form-item>
     <el-form-item label="类名" prop="name">
       <el-input v-model="data.name"></el-input>
     </el-form-item>
-    <div v-if="!this.adding">  // 如果是编辑dialog的话多显现一些内容
+    <el-form-item label="事件" prop="name">
+      <el-input v-model="data.time"></el-input>
+    </el-form-item>
+    <div v-if="!this.adding">                         // 如果是编辑dialog的话多显现一些内容
       南京动物园
     </div>
   </el-form>
@@ -71,25 +74,30 @@ import { createFormDialog, craeteCommonDialog } from 'el-dialog-hoc'
 <script>
 export default {
   props: {
-    adding: Boolean       // optional
+    adding: Boolean         // optional
   },
   data() {
     return {
-      defaultData: {      // must
-        type: '',
-        name: ''
-      },
-      data: {},           // must
-      rules: {            // 定义el-form的validate规则，点击dialog确认按钮的时候，会自动调用
-        type: [
+      data: {},             // must
+      rules: {
+        type: [             // 定义el-form的validate规则，点击dialog确认按钮的时候，会自动调用
           { required: true, message: '名称不能为空！', trigger: 'blur' },
           { max: 5, message: '岗位名称过长，请修改！', trigger: 'blur' },
         ]
       }
     }
   },
+  computed: {
+    defaultData() {         // must
+      return {
+        type: '',
+        name: '',
+        time: new Date()
+      }
+    },
+  },
   methods: {
-    getData() {           // optional
+    getData() {             // optional
       return {
         ...this.data,
         zoo: '南京'
@@ -104,20 +112,18 @@ export default {
 
 | 属性 | vue property 类型 | 必要么 | 作用 |
 | --- | -- | -- | -- |
-| adding | props | 非必须 | 如果为form加了这个属性，这可以根据这个属性去处理添加dialog和编辑dialog的不同 |
-| defaultData | data/computed | 必须 | 打开添加Dialog时表格里的默认值，如果值是固定的用data声明定义即可。如果defaultData不固定需要动态生成，则可以使用computed来计算 |
+| adding | props | 非必须 | 如果为form加了这个属性，这可以根据这个属性去处理添加dialog和编辑dialog tamplate里的不同, 见上例中`v-if="!this.adding"`的使用 |
+| defaultData | data/computed | 必须 | 打开添加Dialog时表格里的默认值，如果值是固定的用data声明定义即可。如果defaultData不固定需要动态生成，则可以使用computed来计算, 见上路中`defaultData`的使用 |
 | data | data | 必须 | 组件库内部使用，设置成`{}`就行, 对应于el-form 的 model字段 |
 | getData | methods | 非必须 | 用于在点击confirm时，处理返回的数据 |
 
-另外，`el-form`一定要有一个ref属性，并且值设置为`form`
+> 另外，特别要注意`el-form`一定要有一个ref属性，并且值设置为`form`
 
 ###  步骤2: 创建Dialog
+使用`createFormDialog`来创建Dialog
 ```
 import { createFormDialog } from 'el-dialog-hoc'
-```
-提供了一个方法来创建Dialog
 
-```
 createFormDialog(config: Config, mixin: VueMixin) : (form: VueConstructor) => VueConstructor
 
 inteface Config {
@@ -129,12 +135,12 @@ inteface Config {
 }
 ```
 
-`createFormDialog`的第一个参数是Config类型的，提供系列的配置项。
-> 配置项里`confirm`函数，可以用作处理Dialog确认的回调，在这个函数里this被绑定为生成的Dialog对象，所以在这个函数里可以调用Dialog对象上的方法。
+`createFormDialog`的第一个参数是Config类型的，提供一系列的配置项。
+> 其中`confirm`函数，用作处理Dialog确认的回调，**在这个函数里this被绑定为生成的Dialog对象**，所以在这个函数里可以调用Dialog对象上的方法。
 
 第二个参数是一个Vue的mixin, 用于深度定制化生成的Dialog组件, 一般配合vuex来使用。
-`createFormDialog`返回一个函数，这个函数接受一个我们上一步创建的包含
-`el-form`的Vue组件作为参数，返回的则是我们需要的Dialog组件。得到的这个dialog的具体参数如下：
+
+`createFormDialog`返回一个函数，这个函数接受一个我们上一步创建的包含`el-form`的Vue组件作为参数，返回的则是我们需要的Dialog组件，最终得到的这个Dialog的具体参数如下：
 
 * props
 
@@ -161,7 +167,7 @@ inteface Config {
 
 ### 步骤3: 使用Dialog
 
-Dialog可能会被用于配合vuex使用或者不和vuex一起使用。这两种场景下Dialog在创建和使用的时候会有所不同
+Dialog可能会被用于配合vuex使用或者不和vuex一起使用。这两种场景下Dialog在创建和使用的时候会有所不同.
 
 #### 配合vuex使用Dialog
 
@@ -192,7 +198,7 @@ export default createFormDialog(
       }
 
       this.hideLoading()
-      this.closeDialog()
+      this.closeDialog() // 关闭Dialog
     }
   },
   {
@@ -207,7 +213,7 @@ export default createFormDialog(
 ```
 
 ```
-// 业务逻辑在vux层完成了，使用Dialog的时候，只需要处理Dialog的打开即可，并为编辑模式提供初始值。
+// 业务逻辑在vux层完成了，使用Dialog的时候，只需要处理Dialog的打开，并为编辑模式提供初始值即可。
 <teamplte>
   <div>
     <staff-form-dialog
@@ -276,7 +282,7 @@ export default createFormDialog({
 
 ```
 // Dialog的代码变得复杂, 需要多传递一个loading的props, 来控制loading状态。
-// 业务逻辑和dialog开关的逻辑，则通过监听confirm事件来处理。
+// 业务逻辑的逻辑，则通过监听confirm事件来处理。
 
 <template>
   <div>
