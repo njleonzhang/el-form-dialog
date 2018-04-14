@@ -4,26 +4,25 @@
 
 ## Why?
 
-## confirm和cancel按钮
+1. confirm和cancel按钮
 [element-ui](http://element.eleme.io/)的[dialog](http://element.eleme.io/#/zh-CN/component/dialog)
 本身是不带按钮的, 需要通过slot去添加。这个设计本身没有问题，组件分离的很开。但是实际使用了缺带来了不便，主要是这里的2个按钮一般一个项目都是一样的，但是却要不断的写这段`slot = footer`代码，感觉很是烦躁。
-```
-<el-dialog
-  title="提示"
-  :visible.sync="dialogVisible"
-  width="30%"
-  :before-close="handleClose">
-  <span>这是一段信息</span>
-  <span slot="footer" class="dialog-footer">
-    <el-button @click="dialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-  </span>
-</el-dialog>
-```
-## validate操作
+    ```
+    <el-dialog
+      title="提示"
+      :visible.sync="dialogVisible"
+      width="30%"
+      :before-close="handleClose">
+      <span>这是一段信息</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
+    ```
+2. validate操作
 就是和[el-form](http://element.eleme.io/#/zh-CN/component/form)一起用的时候，每次点击确定键的时候都要去对表带做validate, 每次点取消都要对validate的提示做清除, 这些代码也是要不断重复的。
-
-## 添加和修改的dialog
+3. 添加和修改的dialog
 添加和修改的dialog一般来说是比较相似的，如果分别写一个dialog来处理，逻辑上自然是简单的，但是缺凭空多出很多重复代码来，运行时也多1倍的组件实例。但是如果把添加和修改dialog做成一个往往又需要处理组件的重用的逻辑复杂性，而这些处理大体上是十分相似的。
 
 这个库对`el-dialog`和`el-form`做了一些封装处理以上问题，让大家可以轻松上阵，专注自己的业务逻辑。
@@ -46,12 +45,12 @@ import { createFormDialog, craeteCommonDialog } from 'el-dialog-hoc'
 
 对于一个添加和修改的dialog，我们实际上只关心需要关心一下几点：
 
-* dialog里form (form的展示、数据、如果validate等)
-* dialog在添加时和修改时的title
-* dialog上确定和取消按钮的labal
-* 点击完成后，得到新的数据，并通知我们处理。 (取消的时候暂时只是关闭dialog)
+1. dialog里form (form的展示、数据、如果validate等)
+2. dialog在添加时和修改时的title
+3. dialog上确定和取消按钮的labal
+4. 点击完成后，得到新的数据，并通知我们处理。 (取消的时候暂时只是关闭dialog)
 
-### 创建form
+### 步骤1: 创建form
 所以第一步我们需要创建一个form:
 
 ```
@@ -112,7 +111,7 @@ export default {
 
 另外，`el-form`一定要有一个ref属性，并且值设置为`form`
 
-### 创建Dialog
+###  步骤2: 创建Dialog
 ```
 import { createFormDialog } from 'el-dialog-hoc'
 ```
@@ -146,8 +145,6 @@ inteface Config {
 | visible | 具有.sync后缀。true的时候显示Dialog |
 | data | 传入数据，供编辑Dialog展示 |
 
-Dialog可能会被用于配合vuex使用或者不和vuex一起使用。这两种场景下Dialog在创建和使用的时候会有所不同
-
 * event
 
 | 属性 | payload | 描述 |
@@ -162,7 +159,11 @@ Dialog可能会被用于配合vuex使用或者不和vuex一起使用。这两种
 | showLoading | 将confirm button置为loading状态 |
 | showLoading | 将confirm button置为非loading状态 |
 
-### 配合vuex使用Dialog
+### 步骤3: 使用Dialog
+
+Dialog可能会被用于配合vuex使用或者不和vuex一起使用。这两种场景下Dialog在创建和使用的时候会有所不同
+
+#### 配合vuex使用Dialog
 
 配合vuex使用的时候，建议在`createFormDialog`第一个参数的confirm函数里处理来confirm点击的业务逻辑。并通过`this`来调用实例上的`closeDialog`，`showLoading`和`showLoading`来控制UI的呈现。
 
@@ -257,7 +258,7 @@ export default createFormDialog(
 </script>
 ```
 
-### 不和vuex组使用
+#### 不和vuex组使用
 对于小的项目，也许并不使用vuex，此时业务逻辑就需要在使用Dialog的时候处理了。
 
 ```
