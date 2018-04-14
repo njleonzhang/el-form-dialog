@@ -72,5 +72,15 @@ module.exports = {
     // `npm run build --report`
     // Set to `true` or `false` to always turn it on or off
     bundleAnalyzerReport: process.env.npm_config_report
+  },
+
+  doc: {
+    // Template for index.html
+    index: path.resolve(__dirname, '../docs/index.html'),
+
+    // Paths
+    assetsRoot: path.resolve(__dirname, '../docs'),
+    assetsSubDirectory: 'static',
+    assetsPublicPath: '/el-form-dialog',
   }
 }

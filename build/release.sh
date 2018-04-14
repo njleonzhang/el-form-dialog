@@ -20,10 +20,9 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   # build
   VERSION=$VERSION npm run build
 
-  # revise version in doc
-  echo "revising version in doc..."
-  # sed -i '' "s/vue-data-tables@\(.*\)\/dist/vue-data-tables@$VERSION\/dist/g" docs/index.html
-  # sed -i '' "s/<small>\(.*\)<\/small>/<small>$VERSION<\/small>/" docs/_coverpage.md
+  # build doc
+  echo "build doc ..."
+  npm run doc
 
   # commit
   git add docs

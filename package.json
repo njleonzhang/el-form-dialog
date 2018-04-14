@@ -1,9 +1,9 @@
 {
   "name": "el-form-dialog",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Vue.js project",
   "author": "njleonzhang <scream3616@sina.com>",
-  "private": true,
+  "main": "dist/el-form-dialog.min.js",
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
@@ -11,7 +11,8 @@
     "test": "npm run unit",
     "lint": "eslint --ext .js,.vue src test/unit",
     "build": "node build/build.js",
-    "release": "./build/release.sh"
+    "release": "./build/release.sh",
+    "doc": "rm -rf docs; webpack --config build/webpack.doc.conf.js"
   },
   "dependencies": {
     "element-ui": "^2.3.3",
