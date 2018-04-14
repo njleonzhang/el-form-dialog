@@ -1,4 +1,4 @@
-# el-dialog-hoc
+# el-form-dialog
 
 > A Hoc to make el-dialog and el-form work eaiser
 
@@ -37,10 +37,10 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 Vue.use(ElementUI)
 
-yarn add el-dialog-hoc
-cnpm install --save-dev el-dialog-hoc
+yarn add el-form-dialog
+cnpm install --save-dev el-form-dialog
 
-import { createFormDialog, craeteCommonDialog } from 'el-dialog-hoc'
+import { createFormDialog, craeteCommonDialog } from 'el-form-dialog'
 ```
 
 对于一个添加和修改的dialog，我们实际上只关心需要关心一下几点：
@@ -122,7 +122,7 @@ export default {
 ###  步骤2: 创建Dialog
 使用`createFormDialog`来创建Dialog
 ```
-import { createFormDialog } from 'el-dialog-hoc'
+import { createFormDialog } from 'el-form-dialog'
 
 createFormDialog(config: Config, mixin: VueMixin) : (form: VueConstructor) => VueConstructor
 

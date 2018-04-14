@@ -27,8 +27,8 @@ const webpackConfig = merge(baseWebpackConfig, {
   devtool: config.build.productionSourceMap ? config.build.devtool : false,
   output: {
     path: config.build.assetsRoot,
-    filename: 'el-dialog-hoc.min.js',
-    library: 'DataTables',
+    filename: 'el-form-dialog.min.js',
+    library: 'ElFormDialog',
     libraryTarget: 'umd'
   },
   externals: {
