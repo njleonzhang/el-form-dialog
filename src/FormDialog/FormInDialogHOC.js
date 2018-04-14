@@ -31,7 +31,7 @@ export default FormComponent => {
     },
     mounted() {
       // 接受来自父组件（commonDialogHoc）的summit事件
-      this.eventBus.$on('submit', async () => {
+      this.eventBus.$on('submit', async () => { // eslint-disable-line space-before-function-paren
         if (await this.isFormValid()) {
           this.$emit('confirm',
             (this.formComponent.getData && this.formComponent.getData()) || this.formComponent.data)
