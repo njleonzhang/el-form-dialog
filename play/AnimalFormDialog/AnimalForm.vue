@@ -9,7 +9,7 @@
     <el-form-item label="事件" prop="name">
       <el-input v-model="data.time"></el-input>
     </el-form-item>
-    <div v-if="!this.adding">
+    <div v-if="!this.inStateOne">
       南京动物园
     </div>
   </el-form>
@@ -18,7 +18,7 @@
 <script>
 export default {
   props: {
-    adding: Boolean
+    inStateOne: Boolean
   },
   data() {
     return {

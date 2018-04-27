@@ -15,8 +15,8 @@ const { mapActions } = createNamespacedHelpers('staffs')
 
 export default createFormDialog(
   {
-    addTitle: 'add staff',
-    editTitle: 'edit staff',
+    stateOneTitle: 'add staff',
+    stateTwoTitle: 'edit staff',
     async confirm(data) {
       this.showLoading()
       // simulate a http request
@@ -25,7 +25,7 @@ export default createFormDialog(
       sample code
 
       try {
-        if (this.adding) {
+        if (this.inStateOne) {
           await this.add()
         } else {
           await this.edit()

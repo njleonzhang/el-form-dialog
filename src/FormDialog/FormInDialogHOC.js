@@ -11,7 +11,7 @@ export default FormComponent => {
   return {
     name: 'FormInDialogHOC',
     props: {
-      adding: Boolean,
+      inStateOne: Boolean,
       data: Object,
       dialogVisible: Boolean
     },
@@ -46,7 +46,7 @@ export default FormComponent => {
               // dialog打开的时候对form进行初始化，如果是新建逻辑，则用formComponent的defaultData字段去初始化form；
               // 否则使用传入的data字段进行初始化(这里暴力地直接去修改了子组件的数据)
               this.formComponent.data = cloneDeep(
-                this.adding
+                this.inStateOne
                   ? this.formComponent.defaultData
                   : this.data
               )
@@ -80,7 +80,7 @@ export default FormComponent => {
     render() {
       return (
         <FormComponent ref='formComponent'
-          adding={ this.adding }
+          in-state-one={ this.inStateOne }
           { ...{attrs: this.$attrs} }
           { ...{on: this.$listeners} }/>
       )

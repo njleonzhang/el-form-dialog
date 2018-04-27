@@ -4,8 +4,8 @@ import FormInDialogHOC from './FormInDialogHOC'
 export default (
   {
     confirm = null,
-    addTitle = '添加',
-    editTitle = '编辑',
+    stateOneTitle = '添加',
+    stateTwoTitle = '编辑',
     confirmText = '确定',
     cancelText = '取消'
   } = {},
@@ -16,7 +16,7 @@ export default (
 
     return {
       props: {
-        adding: {
+        inStateOne: {
           default: true,
           type: Boolean
         },
@@ -59,12 +59,12 @@ export default (
 
       render() {
         let { title, ...attrs } = this.$attrs
-        title = this.adding ? addTitle : editTitle
+        title = this.inStateOne ? stateOneTitle : stateTwoTitle
 
         return (
           <HOC { ...{attrs: attrs} }
             { ...{on: {...this.$listeners, confirm: this.confirm}} }
-            adding={ this.adding }
+            in-state-one={ this.inStateOne }
             title={ title }
             loading={ this.innerLoading }/>
         )

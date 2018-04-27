@@ -1,6 +1,6 @@
 # el-form-dialog
 
-> A Hoc to make el-dialog and el-form work eaiser
+> A Hoc to make el-dialog and el-form work eaiser, provide supporting two state form dialog
 
 [Demo](https://njleonzhang.github.io/el-form-dialog/)
 
@@ -26,8 +26,8 @@
     ```
 2. validate操作<br/>
 就是和[el-form](http://element.eleme.io/#/zh-CN/component/form)一起用的时候，每次点击确定键的时候都要去对表带做validate, 每次点取消都要对validate的提示做清除, 这些代码也是要不断重复的。
-3. 添加和修改的dialog<br/>
-添加和修改的dialog一般来说是比较相似的，如果分别写一个dialog来处理，逻辑上自然是简单的，但是缺凭空多出很多重复代码来，运行时也多1倍的组件实例。但是如果把添加和修改dialog做成一个往往又需要处理组件的重用的逻辑复杂性，而这些处理大体上是十分相似的。
+3. 两种状态的dialog<br/>
+一个典型的场景是我们一个页面，经常会需要新增和编辑一个数据，这是就需要添加和修改2个dialog。而这2个dialog一般来说是比较相似的，如果分别写一个dialog来处理，逻辑上自然是简单的，但是缺凭空多出很多重复代码来，运行时也多1倍的组件实例。但是如果把添加和修改dialog做成一个往往又需要处理组件的重用的逻辑复杂性，而这些处理大体上是十分相似的。
 
 这个库对`el-dialog`和`el-form`做了一些封装处理以上问题，让大家可以轻松上阵，专注自己的业务逻辑。
 
@@ -69,7 +69,7 @@ import { createFormDialog, craeteCommonDialog } from 'el-form-dialog'
     <el-form-item label="事件" prop="name">
       <el-input v-model="data.time"></el-input>
     </el-form-item>
-    <div v-if="!this.adding">                         // 如果是编辑dialog的话多显现一些内容
+    <div v-if="!this.inStateOne">                         // 如果是编辑dialog的话多显现一些内容
       南京动物园
     </div>
   </el-form>
@@ -78,7 +78,7 @@ import { createFormDialog, craeteCommonDialog } from 'el-form-dialog'
 <script>
 export default {
   props: {
-    adding: Boolean         // optional
+    inStateOne: Boolean         // optional
   },
   data() {
     return {
@@ -116,7 +116,7 @@ export default {
 
 | 属性 | vue property 类型 | 必要么 | 作用 |
 | --- | -- | -- | -- |
-| adding | props | 非必须 | 如果为form加了这个属性，这可以根据这个属性去处理添加dialog和编辑dialog tamplate里的不同, 见上例中`v-if="!this.adding"`的使用 |
+| inStateOne | props | 非必须 | 如果为form加了这个属性，这可以根据这个属性去处理两种dialog的不同, 见上例中`v-if="!this.inStateOne"`的使用 |
 | defaultData | data/computed | 必须 | 打开添加Dialog时表格里的默认值，如果值是固定的用data声明定义即可。如果defaultData不固定需要动态生成，则可以使用computed来计算, 见上路中`defaultData`的使用 |
 | data | data | 必须 | 组件库内部使用，设置成`{}`就行, 对应于el-form 的 model字段 |
 | getData | methods | 非必须 | 用于在点击confirm时，处理返回的数据 |
@@ -132,14 +132,14 @@ createFormDialog(config: Config, mixin: VueMixin) : (form: VueConstructor) => Vu
 
 inteface Config {
   confirm? = (data) => void,  // 配合vuex使用时，用于定义回调confirm点击后的回调
-  addTitle? = '添加',          // 添加dialog时的title
-  editTitle? = '编辑',         // 编辑dialog时的title
+  stateOneTitle? = '添加',          // 添加dialog时的title
+  stateTwoTitle? = '编辑',         // 编辑dialog时的title
   confirmText? = '确定',       // 确认按钮的label
   cancelText? = '取消'         // 取消按钮的label
 }
 ```
 
-`createFormDialog`的第一个参数是Config类型的，提供一系列的配置项。
+`createFormDialog`的第一个参数是Config类型的，它提供一系列的配置项。
 > 其中`confirm`函数，用作处理Dialog确认的回调，**在这个函数里this被绑定为生成的Dialog对象**，所以在这个函数里可以调用Dialog对象上的方法。
 
 第二个参数是一个Vue的mixin, 用于深度定制化生成的Dialog组件, 一般配合vuex来使用。
@@ -150,7 +150,7 @@ inteface Config {
 
 | 属性 | 作用 |
 | --- | -- |
-| adding | true的时候Dialog为添加Dailog, false时为编辑Dialog，默认为true |
+| inStateOne | true的时候Dialog为状态1的Dailog, false时为状态2的Dialog，默认为true |
 | loading | 具有.sync后缀。true的时候确认按钮处于loading状态。 |
 | visible | 具有.sync后缀。true的时候显示Dialog |
 | data | 传入数据，供编辑Dialog展示 |
@@ -186,13 +186,13 @@ const { mapActions } = createNamespacedHelpers('staffs')
 
 export default createFormDialog(
   {
-    addTitle: 'add staff',
-    editTitle: 'edit staff',
+    stateOneTitle: 'add staff',
+    stateTwoTitle: 'edit staff',
     async confirm(data) {
       // 主要的业务逻辑
       this.showLoading()
       try {
-        if (this.adding) {
+        if (this.inStateOne) {
           await this.add()
         } else {
           await this.edit()
@@ -221,7 +221,7 @@ export default createFormDialog(
 <teamplte>
   <div>
     <staff-form-dialog
-      :adding='adding'
+      :in-state-one='adding'
       :visible.sync='visible'
       :data='data'>
     </staff-form-dialog>
@@ -279,8 +279,8 @@ import AnimalForm from './AnimalForm'
 import { createFormDialog } from '@/index'
 
 export default createFormDialog({
-  addTitle: 'add animal',
-  editTitle: 'edit animal'
+  stateOneTitle: 'add animal',
+  stateTwoTitle: 'edit animal'
 })(AnimalForm)
 ```
 
@@ -294,7 +294,7 @@ export default createFormDialog({
     <el-button @click="editAnimal">edit animal</el-button>
 
     <animal-form-dialog
-      :adding='adding'
+      :in-state-one='adding'
       :visible.sync='animalDialogOpen'
       :loading.sync='loading'   // 与vuex配合使用的时候不需要此props.
       :data='animalData'

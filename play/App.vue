@@ -5,13 +5,13 @@
     <el-button @click="addAnimal">add animal</el-button>
     <el-button @click="editAnimal">edit animal</el-button>
     <staff-form-dialog
-      :adding='adding'
+      :in-state-one='adding'
       :visible.sync='dialogOpen'
       :data='data'>
     </staff-form-dialog>
 
     <animal-form-dialog
-      :adding='adding'
+      :in-state-one='adding'
       :visible.sync='animalDialogOpen'
       :loading.sync='loading'
       :data='animalData'
