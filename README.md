@@ -101,10 +101,16 @@ export default {
     },
   },
   methods: {
-    getData() {             // optional
+    _getData() {             // optional
       return {
         ...this.data,
         zoo: '南京'
+      }
+    },
+    _setData(data) {        // optional
+      this.data = {
+        ...data,
+        zoo1: '南京'
       }
     }
   }
@@ -119,9 +125,11 @@ export default {
 | inStateOne | props | 非必须 | 如果为form加了这个属性，这可以根据这个属性去处理两种dialog的不同, 见上例中`v-if="!this.inStateOne"`的使用 |
 | defaultData | data/computed | 必须 | 打开添加Dialog时表格里的默认值，如果值是固定的用data声明定义即可。如果defaultData不固定需要动态生成，则可以使用computed来计算, 见上路中`defaultData`的使用 |
 | data | data | 必须 | 组件库内部使用，设置成`{}`就行, 对应于el-form 的 model字段 |
-| getData | methods | 非必须 | 用于在点击confirm时，处理返回的数据 |
+| _getData | methods | 非必须 | 用于在点击confirm时，处理返回的数据 |
+| _setData | methods | 非必须 | 对传入的数据做一些处理的hook |
 
 > 另外，特别要注意`el-form`一定要有一个ref属性，并且值设置为`form`
+> 当外部的数据结构和form里的不同时，可以利用_getData和_setData这2个hook去做前置和后置的处理。
 
 ###  步骤2: 创建Dialog
 使用`createFormDialog`来创建Dialog

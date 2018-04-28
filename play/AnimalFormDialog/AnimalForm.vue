@@ -36,12 +36,20 @@ export default {
       return {
         type: '',
         name: '',
-        time: new Date()
+        time: new Date().toString()
       }
     },
   },
   methods: {
-    getData() {
+    _setData(data) {
+      console.log(data)
+      this.data = {
+        ...data,
+        time: data.time.toString(),
+        zoo1: '北京'
+      }
+    },
+    _getData() {
       return {
         ...this.data,
         zoo: '南京'

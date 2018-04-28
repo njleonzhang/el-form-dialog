@@ -74,6 +74,8 @@ export default {
       this.animalDialogOpen = true
     },
     async confirmAnimal(data) {
+      console.log(data)
+      this.$message(data)
       this.loading = true
       await sleep(1000)
       // your business logic here

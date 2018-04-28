@@ -34,7 +34,7 @@ export default FormComponent => {
       this.eventBus.$on('submit', async () => { // eslint-disable-line space-before-function-paren
         if (await this.isFormValid()) {
           this.$emit('confirm',
-            (this.formComponent.getData && this.formComponent.getData()) || this.formComponent.data)
+            (this.formComponent._getData && this.formComponent._getData()) || this.formComponent.data)
         }
       })
     },
@@ -45,11 +45,16 @@ export default FormComponent => {
             if (val) {
               // dialog打开的时候对form进行初始化，如果是新建逻辑，则用formComponent的defaultData字段去初始化form；
               // 否则使用传入的data字段进行初始化(这里暴力地直接去修改了子组件的数据)
-              this.formComponent.data = cloneDeep(
-                this.inStateOne
-                  ? this.formComponent.defaultData
-                  : this.data
+              let targetData = cloneDeep(this.inStateOne
+                ? this.formComponent.defaultData
+                : this.data
               )
+
+              if (this.formComponent._setData) {
+                this.formComponent._setData(targetData)
+              } else {
+                this.formComponent.data = targetData
+              }
             } else {
               // dialog关闭的时候把form的validate清除
               this.form.clearValidate()
