@@ -175,7 +175,7 @@ inteface Config {
 | --- | -- |
 | closeDialog | 关闭Dialog |
 | showLoading | 将confirm button置为loading状态 |
-| showLoading | 将confirm button置为非loading状态 |
+| hideLoading | 将confirm button置为非loading状态 |
 
 ### 步骤3: 使用Dialog
 
@@ -183,7 +183,7 @@ Dialog可能会被用于配合vuex使用或者不和vuex一起使用。这两种
 
 #### 配合vuex使用Dialog
 
-配合vuex使用的时候，建议在`createFormDialog`第一个参数的confirm函数里处理来confirm点击的业务逻辑。并通过`this`来调用实例上的`closeDialog`，`showLoading`和`showLoading`来控制UI的呈现。
+配合vuex使用的时候，建议在`createFormDialog`第一个参数的confirm函数里处理来confirm点击的业务逻辑。并通过`this`来调用实例上的`closeDialog`，`showLoading`和`hideLoading`来控制UI的呈现。
 
 ```
 // StaffFormDialog.js
