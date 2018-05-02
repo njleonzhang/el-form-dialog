@@ -6,6 +6,7 @@
 
 [Demo code](https://github.com/njleonzhang/el-form-dialog/tree/master/play)
 
+[中文文档](https://github.com/njleonzhang/el-form-dialog/blob/master/README_cn.md)
 ## Why?
 
 1. confirm and cancel<br/>
@@ -135,8 +136,8 @@ This form is basically same to [el-form](http://element.eleme.io/#/zh-CN/compone
 > `model` prop of `el-form` must be `data`.
 > when outer data schema is different to inner data, `_getData` and `_setData` can be leveraged to handle.
 
-###  Step2: Create Dialog
-使用`createFormDialog`来创建Dialog
+###  Step 2: Create Dialog
+leverage `createFormDialog`to create Dialog
 ```
 import { createFormDialog } from 'el-form-dialog'
 
@@ -183,7 +184,7 @@ The generated Dialog has the following props, events and methods:
 | showLoading | make confirm button loading show |
 | showLoading | make confirm button loading hide |
 
-### 步骤3: use the generated dialog
+### Step 3: use the generated dialog
 
 The Dialog can be used in 2 scenerio, with-vuex or without-vuex
 
