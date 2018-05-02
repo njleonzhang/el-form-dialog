@@ -6,6 +6,7 @@
 
 [Demo code](https://github.com/njleonzhang/el-form-dialog/tree/master/play)
 
+[En Doc](https://github.com/njleonzhang/el-form-dialog/blob/master/README.md)
 ## Why?
 
 1. confirm和cancel按钮<br/>
