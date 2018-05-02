@@ -1,6 +1,6 @@
 # el-form-dialog
 
-> A Hoc to make el-dialog and el-form work eaiser, provide supporting two state form dialog
+> A tool to make [el-dialog](http://element.eleme.io/#/en-US/component/dialog) and [el-form](http://element.eleme.io/#/en-US/component/form) work eaiser, especially for creating dialog to support two states, such as `add` and `edit`.
 
 [Demo](https://njleonzhang.github.io/el-form-dialog/)
 
@@ -8,30 +8,32 @@
 
 ## Why?
 
-1. confirm和cancel按钮<br/>
-[element-ui](http://element.eleme.io/)的[dialog](http://element.eleme.io/#/zh-CN/component/dialog)
-本身是不带按钮的, 需要通过slot去添加。这个设计本身没有问题，组件分离的很开。但是实际使用了缺带来了不便，主要是这里的2个按钮一般一个项目都是一样的，但是却要不断的写这段`slot = footer`代码，感觉很是烦躁。
+1. confirm and cancel<br/>
+[el-dialog](http://element.eleme.io/#/zh-CN/component/dialog) of [element-ui](http://element.eleme.io/) doesn't contain confirm and cancel button. Buttons need to be added to `dialog` by `slot`. It is a flexible design and split features to different components. At the same time, this design brings inconvinience and annoyance when lots of Dialog with buttons is used in the project. the following code need to be repeated again and again.
+
     ```
     <el-dialog
-      title="提示"
+      title="title"
       :visible.sync="dialogVisible"
       width="30%"
       :before-close="handleClose">
-      <span>这是一段信息</span>
+      <span>some message/span>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        <el-button @click="dialogVisible = false">cancel</el-button>
+        <el-button type="primary" @click="dialogVisible = false">confirm</el-button>
       </span>
     </el-dialog>
     ```
-2. validate操作<br/>
-就是和[el-form](http://element.eleme.io/#/zh-CN/component/form)一起用的时候，每次点击确定键的时候都要去对表带做validate, 每次点取消都要对validate的提示做清除, 这些代码也是要不断重复的。
-3. 两种状态的dialog<br/>
-一个典型的场景是我们一个页面，经常会需要新增和编辑一个数据，这是就需要添加和修改2个dialog。而这2个dialog一般来说是比较相似的，如果分别写一个dialog来处理，逻辑上自然是简单的，但是缺凭空多出很多重复代码来，运行时也多1倍的组件实例。但是如果把添加和修改dialog做成一个往往又需要处理组件的重用的逻辑复杂性，而这些处理大体上是十分相似的。
+2. validate<br/>
+If dialog is used with [el-form](http://element.eleme.io/#/zh-CN/component/form), then every time the `confirm` button is clicked, the data in form need to be validated, and every time the dialog is closed, the validate need to be cleared. This logic is also need to be repeated again and again.
+3. dialog for 2 states<br/>
+a typical scenerio is that we need dialogs to create and edit some data. most of the time, The 2 dialogs are similiar. If we write 2 standalone dialog components, it make redudant code, and dialog instance is doubled in run time. If we write 1 dialog component, then we need to handle the complexity of the 2 states.
+4. loading<br/>
+when `confirm` is clicked, most of the time we send a http request, which means we need to show loading and hide loading.
 
-这个库对`el-dialog`和`el-form`做了一些封装处理以上问题，让大家可以轻松上阵，专注自己的业务逻辑。
+This library handle all the above issues for you, and make you focus on your business logic.
 
-## 使用
+## Usage
 
 ```
 yarn add element-ui
@@ -44,33 +46,34 @@ Vue.use(ElementUI)
 yarn add el-form-dialog
 cnpm install --save-dev el-form-dialog
 
-import { createFormDialog, craeteCommonDialog } from 'el-form-dialog'
+import { createFormDialog } from 'el-form-dialog'
 ```
 
-对于一个添加和修改的dialog，我们实际上只关心需要关心一下几点：
+For a 2 state dialog, take `add` and `edit` as an example, we only care the followings:
 
-1. dialog里form (form的展示、数据、validate等)
-2. dialog在添加时和修改时的title
-3. dialog上确定和取消按钮的label
-4. 点击完成后，得到新的数据，并通知我们处理。 (取消暂时只是关闭dialog，无法自定义)
+1. the form in dialog (teamplte、data schema、validate)
+2. dialog title in `add` and `edit` states
+3. label of `confirm` and `cancel` buttons
+4. a `event` to emit the new data. which we can listen on and do somthing with.
 
-### 步骤1: 创建form
-第一步我们需要创建一个form:
+### Step 1: create a Form
 
 ```
+Sample:
+
 <template>
-  <el-form :model='data' :rules='rules' ref='form'>   // model属性一定要是 data, el-form 一定要有ref并且设置为for
-    <el-form-item label="科目" prop="type">
+  <el-form :model='data' :rules='rules' ref='form'> // model prop must be data, el-form must have ref attribute whose value is form
+    <el-form-item label="type" prop="type">
       <el-input v-model="data.type"></el-input>
     </el-form-item>
-    <el-form-item label="类名" prop="name">
+    <el-form-item label="name" prop="name">
       <el-input v-model="data.name"></el-input>
     </el-form-item>
-    <el-form-item label="事件" prop="name">
+    <el-form-item label="time" prop="time">
       <el-input v-model="data.time"></el-input>
     </el-form-item>
-    <div v-if="!this.inStateOne">                         // 如果是编辑dialog的话多显现一些内容
-      南京动物园
+    <div v-if="!this.inStateOne"> // show more thing in edit state
+      nanjing zoo
     </div>
   </el-form>
 </template>
@@ -84,9 +87,9 @@ export default {
     return {
       data: {},             // must
       rules: {
-        type: [             // 定义el-form的validate规则，点击dialog确认按钮的时候，会自动调用
-          { required: true, message: '名称不能为空！', trigger: 'blur' },
-          { max: 5, message: '岗位名称过长，请修改！', trigger: 'blur' },
+        type: [             // el-form validate is excuted when `confirm` button clicked.
+          { required: true, message: 'type can not be empty', trigger: 'blur' },
+          { max: 5, message: 'type too long', trigger: 'blur' },
         ]
       }
     }
@@ -104,13 +107,13 @@ export default {
     _getData() {             // optional
       return {
         ...this.data,
-        zoo: '南京'
+        zoo: 'nanjing'
       }
     },
     _setData(data) {        // optional
       this.data = {
         ...data,
-        zoo1: '南京'
+        zoo1: 'nanjing'
       }
     }
   }
@@ -118,20 +121,21 @@ export default {
 </script>
 ```
 
-这个form与一般的element-ui的[el-form](http://element.eleme.io/#/zh-CN/component/form)相比，没什么太多的不同，只是这几个字段要特别注意一下。
+This form is basically same to [el-form](http://element.eleme.io/#/zh-CN/component/form), only few specifics need you attention.
 
-| 属性 | vue property 类型 | 必要么 | 作用 |
+| prop | vue property type | optional | desc |
 | --- | -- | -- | -- |
-| inStateOne | props | 非必须 | 如果为form加了这个属性，这可以根据这个属性去处理两种dialog的不同, 见上例中`v-if="!this.inStateOne"`的使用 |
-| defaultData | data/computed | 必须 | 打开添加Dialog时表格里的默认值，如果值是固定的用data声明定义即可。如果defaultData不固定需要动态生成，则可以使用computed来计算, 见上路中`defaultData`的使用 |
-| data | data | 必须 | 组件库内部使用，设置成`{}`就行, 对应于el-form 的 model字段 |
-| _getData | methods | 非必须 | 用于在点击confirm时，处理返回的数据 |
-| _setData | methods | 非必须 | 对传入的数据做一些处理的hook |
+| inStateOne | props | optional | `inStateOne` can be leveraged to distinguish the difference of 2 state, refer to the usage of `v-if="!this.inStateOne"` in the sample |
+| defaultData | data/computed | must | the data for stateOne, can be directly assigned as `data`, or genarated dymaticially as `computed` |
+| data | data | must | used by the library as `model` prop of `el-form`, just set it as `{}`, |
+| _getData | methods | optional | convert inner `data` to `confirm` event data if provided |
+| _setData | methods | optional | convert outer or default `data` to inner `data` if provided  |
 
-> 另外，特别要注意`el-form`一定要有一个ref属性，并且值设置为`form`
-> 当外部的数据结构和form里的不同时，可以利用_getData和_setData这2个hook去做前置和后置的处理。
+> `el-form` must have ref attribute，whose value must be `form`
+> `model` prop of `el-form` must be `data`.
+> when outer data schema is different to inner data, `_getData` and `_setData` can be leveraged to handle.
 
-###  步骤2: 创建Dialog
+###  Step2: Create Dialog
 使用`createFormDialog`来创建Dialog
 ```
 import { createFormDialog } from 'el-form-dialog'
@@ -139,51 +143,52 @@ import { createFormDialog } from 'el-form-dialog'
 createFormDialog(config: Config, mixin: VueMixin) : (form: VueConstructor) => VueConstructor
 
 inteface Config {
-  confirm? = (data) => void,  // 配合vuex使用时，用于定义回调confirm点击后的回调
-  stateOneTitle? = '添加',          // 添加dialog时的title
-  stateTwoTitle? = '编辑',         // 编辑dialog时的title
-  confirmText? = '确定',       // 确认按钮的label
-  cancelText? = '取消'         // 取消按钮的label
+  confirm? = (data) => void,  // use with vuex, define the callback of `confirm` click
+  stateOneTitle? = 'add',     // title of state one dialog (add dialog here)
+  stateTwoTitle? = 'edit',    // title of state two dialog (edit dialog here)
+  confirmText? = 'confirm',   // label of confirm button
+  cancelText? = 'cancel'      // label of cancel button
 }
 ```
 
-`createFormDialog`的第一个参数是Config类型的，它提供一系列的配置项。
-> 其中`confirm`函数，用作处理Dialog确认的回调，**在这个函数里this被绑定为生成的Dialog对象**，所以在这个函数里可以调用Dialog对象上的方法。
+first parameter of `createFormDialog` is of type Config. configration is stting by this parameter.
+> the `confirm` is a callback function for confirm button click，**the function call is bind to the generated dialog instance**，so you can call dialog instance methods in `confirm` by `this`.
 
-第二个参数是一个Vue的mixin, 用于深度定制化生成的Dialog组件, 一般配合vuex来使用。
+2nd parameter is a Vue mixin, which is used to customize the  generated dialog deeply. it is used with vuex in general.
 
-`createFormDialog`返回一个函数，这个函数接受一个我们上一步创建的包含`el-form`的Vue组件作为参数，返回的则是我们需要的Dialog组件，最终得到的这个Dialog的具体参数如下：
+`createFormDialog` returns a function, which accepts the `form components` we created in Step1 as parameter, and returns the final generated Dialog.
+
+The generated Dialog has the following props, events and methods:
 
 * props
 
-| 属性 | 作用 |
+| property | desc |
 | --- | -- |
-| inStateOne | true的时候Dialog为状态1的Dailog, false时为状态2的Dialog，默认为true |
-| loading | 具有.sync后缀。true的时候确认按钮处于loading状态。 |
-| visible | 具有.sync后缀。true的时候显示Dialog |
-| data | 传入数据，供编辑Dialog展示 |
+| inStateOne | default as true. true to indicate the Dialog is in state one, false to indicate the Dialog is in state two |
+| loading | with .sync modifier. true to indicate confirm button show loading  |
+| visible | with .sync modifier. true to indicate the Dialog to show |
+| data | outData to show in state 2 form  |
 
 * event
 
-| 属性 | payload | 描述 |
+| property | payload | desc |
 | --- | -- | -- |
-| confirm | el-form里的数据 | 点击Dialog确认时发出 |
+| confirm | model of el-form | emit when confirm button is clicked and the form is valid |
 
-* 对象方法
+* methods
 
-| 属性 | 描述 |
+| property | desc |
 | --- | -- |
-| closeDialog | 关闭Dialog |
-| showLoading | 将confirm button置为loading状态 |
-| hideLoading | 将confirm button置为非loading状态 |
+| closeDialog | close the Dialog |
+| showLoading | make confirm button loading show |
+| showLoading | make confirm button loading hide |
 
-### 步骤3: 使用Dialog
+### 步骤3: use the generated dialog
 
-Dialog可能会被用于配合vuex使用或者不和vuex一起使用。这两种场景下Dialog在创建和使用的时候会有所不同.
+The Dialog can be used in 2 scenerio, with-vuex or without-vuex
 
-#### 配合vuex使用Dialog
-
-配合vuex使用的时候，建议在`createFormDialog`第一个参数的confirm函数里处理来confirm点击的业务逻辑。并通过`this`来调用实例上的`closeDialog`，`showLoading`和`hideLoading`来控制UI的呈现。
+#### with Vuex
+When the generated dialog is used with Vuex, business logic of confirm button click is suggested to implemented in `confirm` property of the first parameter `createFormDialog`. `closeDialog`，`showLoading` and `showLoading` can be leveraged to control the UI show.
 
 ```
 // StaffFormDialog.js
@@ -197,7 +202,7 @@ export default createFormDialog(
     stateOneTitle: 'add staff',
     stateTwoTitle: 'edit staff',
     async confirm(data) {
-      // 主要的业务逻辑
+      // logic is simple here due to vuex
       this.showLoading()
       try {
         if (this.inStateOne) {
@@ -210,7 +215,7 @@ export default createFormDialog(
       }
 
       this.hideLoading()
-      this.closeDialog() // 关闭Dialog
+      this.closeDialog() // close Dialog
     }
   },
   {
@@ -225,7 +230,8 @@ export default createFormDialog(
 ```
 
 ```
-// 业务逻辑在vux层完成了，使用Dialog的时候，只需要处理Dialog的打开，并为编辑模式提供初始值即可。
+// business logic is implemented in vux and `confirm`. In this senerio, just provide edit value for edit state, and change state and control the open when use the generated dialog.
+
 <teamplte>
   <div>
     <staff-form-dialog
@@ -276,13 +282,14 @@ export default createFormDialog(
 </script>
 ```
 
-#### 不和vuex组使用
-对于小的项目，也许并不使用vuex，此时业务逻辑就需要在使用Dialog的时候处理了。
+#### without vuex
+For small project, vuex is not necessary, somtime event too heavy. we need to handle business logic when use the generated dialog.
 
 ```
 // AnimalFormDialog.vue
 
-// Dailog的创建变得简单，因为不需要处理业务逻辑了。
+// Dailog creat is sample, no business logic here
+
 import AnimalForm from './AnimalForm'
 import { createFormDialog } from '@/index'
 
@@ -293,8 +300,7 @@ export default createFormDialog({
 ```
 
 ```
-// Dialog的代码变得复杂, 需要多传递一个loading的props, 来控制loading状态。
-// 业务逻辑的逻辑，则通过监听confirm事件来处理。
+// Dialog usage code become complex, need pass loading prop to control the loading show. event `confirm` is listened to handle the  business logic in this scenario
 
 <template>
   <div>
@@ -304,9 +310,9 @@ export default createFormDialog({
     <animal-form-dialog
       :in-state-one='adding'
       :visible.sync='animalDialogOpen'
-      :loading.sync='loading'   // 与vuex配合使用的时候不需要此props.
+      :loading.sync='loading'   // only need without vuex
       :data='animalData'
-      @confirm='confirmAnimal'> // 与vuex配合使用的时候也不需要监听此事件.
+      @confirm='confirmAnimal'> // only need without vuex.
     </animal-form-dialog>
   </div>
 </template>
