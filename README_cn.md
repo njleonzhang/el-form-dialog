@@ -165,7 +165,7 @@ inteface Config {
 | loading | 具有.sync后缀。true的时候确认按钮处于loading状态。 |
 | visible | 具有.sync后缀。true的时候显示Dialog |
 | data | 传入数据，供编辑Dialog展示 |
-
+| dialogProps | el-dialog的props, 参考ElementUi官网[用法](http://element.eleme.io/#/zh-CN/component/dialog) |
 * event
 
 | 属性 | payload | 描述 |
