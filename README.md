@@ -169,6 +169,7 @@ The generated Dialog has the following props, events and methods:
 | loading | with .sync modifier. true to indicate confirm button show loading  |
 | visible | with .sync modifier. true to indicate the Dialog to show |
 | data | outData to show in state 2 form  |
+| dialogProps | el-dialog props, reference to [this](http://element.eleme.io/#/en-US/component/dialog) |
 
 * event
 
