@@ -62,7 +62,7 @@ import { createFormDialog } from 'el-form-dialog'
 
 ```
 <template>
-  <el-form :model='data' :rules='rules' ref='form'>   // model属性一定要是 data, el-form 一定要有ref并且设置为for
+  <el-form :model='data' :rules='rules' ref='form'>   // model属性一定要是 data, el-form 一定要有ref并且设置为form
     <el-form-item label="科目" prop="type">
       <el-input v-model="data.type"></el-input>
     </el-form-item>
