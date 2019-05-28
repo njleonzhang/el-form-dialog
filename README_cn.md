@@ -26,7 +26,7 @@
     </el-dialog>
     ```
 2. validate操作<br/>
-就是和[el-form](http://element.eleme.io/#/zh-CN/component/form)一起用的时候，每次点击确定键的时候都要去对表带做validate, 每次点取消都要对validate的提示做清除, 这些代码也是要不断重复的。
+就是和[el-form](http://element.eleme.io/#/zh-CN/component/form)一起用的时候，每次点击确定键的时候都要去对表单做validate, 每次点取消都要对validate的提示做清除, 这些代码也是要不断重复的。
 3. 两种状态的dialog<br/>
 一个典型的场景是我们一个页面，经常会需要新增和编辑一个数据，这是就需要添加和修改2个dialog。而这2个dialog一般来说是比较相似的，如果分别写一个dialog来处理，逻辑上自然是简单的，但是缺凭空多出很多重复代码来，运行时也多1倍的组件实例。但是如果把添加和修改dialog做成一个往往又需要处理组件的重用的逻辑复杂性，而这些处理大体上是十分相似的。
 4. loading
