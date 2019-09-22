@@ -34,7 +34,7 @@ export default FormComponent => {
       this.eventBus.$on('submit', async () => { // eslint-disable-line space-before-function-paren
         if (await this.isFormValid()) {
           this.$emit('confirm',
-            (this.formComponent._getData && this.formComponent._getData()) || this.formComponent.data)
+            (this.formComponent._getData && await this.formComponent._getData()) || this.formComponent.data)
         }
       })
     },
